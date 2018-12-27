@@ -56,7 +56,9 @@ $config = [
     ],
     'controllerMap'=>[
         'swoole' => [
-            'class' => 'feehi\console\SwooleController',
+//            'class' => 'feehi\console\SwooleController',
+//            'class' => 'feehi\console\SwoolewsController',
+            'class' => 'app\commands\SwoolewsController',
             'rootDir' =>   str_replace('config', '', __DIR__ ),//yii2项目根路径
             'type' => 'basic',//yii2项目类型，默认为advanced。此处还可以为basic
             'app' => '',//app目录地址,如果type为basic，这里一般为空
