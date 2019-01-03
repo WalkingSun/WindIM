@@ -8,7 +8,6 @@
 
 namespace app\commands;
 
-
 use yii\console\Controller;
 use feehi\swoole\WsServer;
 use feehi\web\Logger;
@@ -233,6 +232,7 @@ class SwoolewsController extends Controller
         $this->actionStart();
     }
 
+    //todo 实现平滑启动
     public function actionReload()
     {
         $this->actionRestart();
