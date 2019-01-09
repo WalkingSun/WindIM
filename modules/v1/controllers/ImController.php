@@ -38,19 +38,19 @@ class ImController extends Controller
 //        $this->SERVER_SWOOLE
         $table = new \swoole_table( 10 );
         $table->column('id',Table::TYPE_STRING, 1);
-        $table->column('name',Table::TYPE_STRING, 10);
-        $table->column('age',Table::TYPE_STRING, 10);
+        $table->column('username',Table::TYPE_STRING, 10);
+        $table->column('avatar',Table::TYPE_STRING, 100);
         $table->create();
-        $table->set('1', ['id' => 1, 'name' => 'test1', 'age' => 20]);
-        $table->set('2', ['id' => 2, 'name' => 'test2', 'age' => 21]);
-        $table->set('3', ['id' => 3, 'name' => 'test3', 'age' => 19]);
+        $table->set('1', ['id' => 1, 'username' => 'Tom', 'avatar' =>  $this->avatar[0]]);
+        $table->set('2', ['id' => 2, 'username' => 'Sun', 'avatar' =>  $this->avatar[1]]);
+        $table->set('3', ['id' => 3, 'username' => 'ssss', 'avatar' =>  $this->avatar[1]]);
+
+        $userList = [];
         if( $table->count() ){
             foreach ($table as $v){
-                var_dump($v);
+                $userList[] = $v;
             }
         }
-
-        $friends = [];
 
         //生成当前用户信息
         $user = [
@@ -58,7 +58,7 @@ class ImController extends Controller
             'avatar'   =>   $this->avatar[rand(0,count($this->avatar)-1)],
         ];
 
-        return $this->render('simple',['user'=>$user,'friends'=>$friends]);
+        return $this->render('simple',['user'=>$user,'userList'=>$userList]);
     }
 
 
