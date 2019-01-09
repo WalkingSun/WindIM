@@ -15,6 +15,11 @@ $config = [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
     ],
+    'modules' => [
+        'v1' => [
+            'class' => 'app\modules\v1\Module'
+        ]
+    ],
     'components' => [
         'cache' => [
             'class' => 'yii\caching\FileCache',

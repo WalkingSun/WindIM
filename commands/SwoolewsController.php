@@ -53,8 +53,6 @@ class SwoolewsController extends Controller
 
     public $gcSessionInterval = 60000;//启动session回收的间隔时间，单位为毫秒
 
-
-
     public function actionStart()
     {
         if( $this->getPid() !== false ){
@@ -96,6 +94,8 @@ class SwoolewsController extends Controller
         ], $this->swooleConfig);
 
         $server = new WsServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
+
+        $_SERVER['SERVER_SWOOLE'] = $server;
 
         /**
          * @param \swoole_http_request $request
@@ -232,10 +232,10 @@ class SwoolewsController extends Controller
         $this->actionStart();
     }
 
-    //todo 实现平滑启动
+    //实现平滑启动 缺陷对work进程之前的代码改动不做重载
     public function actionReload()
     {
-        $this->actionRestart();
+        $this->sendSignal(SIGUSR1);
     }
 
     private function sendSignal($sig)
