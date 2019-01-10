@@ -127,20 +127,25 @@ $websocketUrl = '47.99.189.105:9501';
     {
         var d = JSON.parse(evt.data);
         if( d.action=='connect' ){
-            var li = '<li class="active">' +
+            var li = '<li class="active" id="user_'+d.fd+'">' +
                 '<img class="avatar" width="30" height="30" alt="" src="'+d.avatar+'">' +
                 '<p class="name">'+d.username+'</p>' +
                 '</li>';
             $(".m-list ul").append(li);
         }
-        showdata(d);
+        if( d.action=='send' ) {
+            showdata(d);
+        }
+
+        if( d.action=='remove'){
+            $("#user_"+d.fd).remove();
+        }
 
         console.log(evt.data)
     };
 
     ws.onclose = function(evt)
     {
-
         console.log("WebSocketClosed!");
 
     };

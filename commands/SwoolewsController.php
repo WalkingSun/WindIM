@@ -239,6 +239,11 @@ class SwoolewsController extends Controller
             //退出房间处理
 
             self::$table->del($fd);
+            foreach (self::$table as $v){
+                    $pushData = ['fd'=>$fd,'username'=>'','avatar'=>'','time'=>date('H:i'),'data'=>'','action'=>'remove'];
+                    $server->push($v['fd'],json_encode($pushData));
+            }
+
             echo  "Client close fd {$fd}".PHP_EOL;
         };
 
