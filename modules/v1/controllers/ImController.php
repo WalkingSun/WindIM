@@ -7,6 +7,8 @@
  */
 namespace app\modules\v1\controllers;
 
+use app\commands\SwoolewsController;
+use app\models\SwooleTable;
 use Swoole\Table;
 use yii\web\Controller;
 
@@ -35,26 +37,16 @@ class ImController extends Controller
         $this->layout = false;
 
         //查询当前服务连接所有客户信息
-//        $this->SERVER_SWOOLE
-        $table = new \swoole_table( 10 );
-        $table->column('id',Table::TYPE_STRING, 1);
-        $table->column('username',Table::TYPE_STRING, 10);
-        $table->column('avatar',Table::TYPE_STRING, 100);
-        $table->create();
-        $table->set('1', ['id' => 1, 'username' => 'Tom', 'avatar' =>  $this->avatar[0]]);
-        $table->set('2', ['id' => 2, 'username' => 'Sun', 'avatar' =>  $this->avatar[1]]);
-        $table->set('3', ['id' => 3, 'username' => 'ssss', 'avatar' =>  $this->avatar[1]]);
-
-        $userList = [];
-        if( $table->count() ){
-            foreach ($table as $v){
+        $userList = [];//var_dump($table);
+        if(  SwoolewsController::$table->count() ){
+            foreach (SwoolewsController::$table as $v){
                 $userList[] = $v;
             }
         }
 
         //生成当前用户信息
         $user = [
-            'username'   =>   $this->username[rand(0,count($this->username)-1)],
+            'username'   =>   $this->username[rand(0,count($this->username)-1)].rand(10,100),
             'avatar'   =>   $this->avatar[rand(0,count($this->avatar)-1)],
         ];
 

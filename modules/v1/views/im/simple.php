@@ -6,7 +6,7 @@
  * Time: 19:14
  */
 
-
+$websocketUrl = '47.99.189.105:9501';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -47,8 +47,8 @@
 <div id="chat"><div class="sidebar">
         <div class="m-card">
             <header>
-                <img class="avatar" width="40" height="40" alt="Coffce" src="dist/images/1.jpg">
-                <p class="name">Coffce</p>
+                <img class="avatar" width="40" height="40" alt="Coffce" src="<?php echo $user['avatar'];?>">
+                <p class="name"><?php echo $user['username'];?></p>
             </header>
 <!--            <footer>-->
 <!--                <input class="search" placeholder="search user...">-->
@@ -76,26 +76,98 @@
                 <li>
                     <p class="time"><span>13:42</span></p>
                     <div class="main">
-                        <img class="avatar" width="30" height="30" src="dist/images/2.png">
-                        <div class="text">Hello，这是一个基于Vue + Webpack构建的简单chat示例，聊天记录保存在localStorge。简单演示了Vue的基础特性和webpack配置。</div>
+                        <img class="avatar" width="30" height="30" src="https://avatars0.githubusercontent.com/u/13904719?s=400&u=63347e4bb1baa6dfbdfac9521d3ed3bb9b40ca02&v=4">
+                        <div class="text">Hello，这是一个基于php+swoole构建的简单chat示例。</div>
                     </div>
                 </li>
                 <li>
                     <p class="time"><span>13:42</span></p>
                     <div class="main">
-                        <img class="avatar" width="30" height="30" src="dist/images/2.png">
-                        <div class="text">项目地址: https://github.com/coffcer/vue-chat</div>
+                        <img class="avatar" width="30" height="30" src="https://avatars0.githubusercontent.com/u/13904719?s=400&u=63347e4bb1baa6dfbdfac9521d3ed3bb9b40ca02&v=4">
+                        <div class="text">项目地址: <a href="https://github.com/WalkingSun/WindIM" target="_blank">https://github.com/WalkingSun/WindIM</a></div>
                     </div>
                 </li><!--v-for-end-->
             </ul>
         </div><!--v-component-->
         <div class="m-text">
-            <textarea placeholder="按 Ctrl + Enter 发送"></textarea>
+            <textarea placeholder="按 Enter 发送"></textarea>
         </div><!--v-component-->
     </div>
 </div>
-<script src="dist/vue.js"></script>
-<script src="dist/main.js"></script>
+<!--<script src="dist/vue.js"></script>-->
+<!--<script src="dist/main.js"></script>-->
+<?=\yii\helpers\Html::jsFile('@web/js/jquery.min.js')?>
+<script type="application/javascript">
+    $(window).keydown(function (event) {
+
+        // 监听 Ctrl + Enter 可全屏查看  event.ctrlKey &&
+        if ( event.keyCode == 13) {
+              var text = $('textarea').val();
+            var myDate = new Date();
+
+            var time = myDate.getHours()+':'+myDate.getMinutes();
+            var msg = {"username":"<?php echo $user['username'];?>","avatar":"<?php echo $user['avatar'];?>","data":text,"token":"simplechat","time":time};
+            showdata(msg);
+            msg = JSON.stringify(msg);
+            ws.send(msg);
+        }
+    });
+
+
+    var ws = new WebSocket("ws://<?php echo $websocketUrl;?>");
+
+        ws.onopen = function()
+        {
+            var msg = {"username":"<?php echo $user['username'];?>","avatar":"<?php echo $user['avatar'];?>","token":"simplechat_open"};
+            msg = JSON.stringify(msg);
+            ws.send(msg);
+        };
+
+    ws.onmessage = function(evt)
+    {
+        var d = JSON.parse(evt.data);
+        if( d.action=='connect' ){
+            var li = '<li class="active">' +
+                '<img class="avatar" width="30" height="30" alt="" src="'+d.avatar+'">' +
+                '<p class="name">'+d.username+'</p>' +
+                '</li>';
+            $(".m-list ul").append(li);
+        }
+        showdata(d);
+
+        console.log(evt.data)
+    };
+
+    ws.onclose = function(evt)
+    {
+
+        console.log("WebSocketClosed!");
+
+    };
+
+    ws.onerror = function(evt)
+    {
+
+        console.log("WebSocketError!");
+
+    };
+
+
+    function showdata(data) {
+
+        var t = '<li>' +
+            '<p class="time"><span>'+data.time+'</span></p>' +
+            '<div class="main">' +
+            '<div ><img class="avatar" width="30" height="30" src="'+data.avatar+'">' +
+            //'<span style="float:left"><?php //echo $user['username'];?>//</span></div>'
+            '<div class="text">'+data.data+'</div>' +
+            '</div>' +
+            '</li>';
+        $('textarea').val('');
+        $(".m-message ul").append(t);
+    }
+</script>
+
 
 </body>
 </html>

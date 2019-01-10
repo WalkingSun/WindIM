@@ -8,6 +8,8 @@
 
 namespace app\commands;
 
+use app\models\SwooleTable;
+use Swoole\Table;
 use yii\console\Controller;
 use feehi\swoole\WsServer;
 use feehi\web\Logger;
@@ -53,6 +55,8 @@ class SwoolewsController extends Controller
 
     public $gcSessionInterval = 60000;//启动session回收的间隔时间，单位为毫秒
 
+    public static $table;
+
     public function actionStart()
     {
         if( $this->getPid() !== false ){
@@ -96,6 +100,13 @@ class SwoolewsController extends Controller
         $server = new WsServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
 
         $_SERVER['SERVER_SWOOLE'] = $server;
+
+        self::$table = new \swoole_table(10);
+        self::$table->column('username',Table::TYPE_STRING, 10);
+        self::$table->column('avatar',Table::TYPE_STRING, 100);
+        self::$table->column('msg',Table::TYPE_STRING, 255);
+        self::$table->column('fd',Table::TYPE_INT, 6);
+        self::$table->create();
 
         /**
          * @param \swoole_http_request $request
@@ -170,18 +181,51 @@ class SwoolewsController extends Controller
             }
         };
 
+        //握手处理
+        $server->openDeal = function ( $server , $request ){
+
+            echo "server handshake with fd={$request->fd}\n";
+        };
+
         //发送消息处理
         $server->messageDeal = function( $server,  $iframe ) {
             //记录客户端信息
             echo "Client connection fd {$iframe->fd} ".PHP_EOL;
 
-            $data = $iframe->data;
+            $data = json_decode( $iframe->data ,1 );
 
+            if( !empty($data['token']) ){
+                if( $data['token']== 'simplechat_open' ){
+                    if( !self::$table->exist($iframe->fd) ){
+                        $user = array_merge($data,['fd'=>$iframe->fd]);
+                        self::$table->set($iframe->fd,$user);
 
+                        //发送连接用户信息
+                        foreach (self::$table as $v){
+                            if($v['fd']!=$iframe->fd){
+                                $pushData = array_merge($user,['action'=>'connect']);
+                                $server->push($v['fd'],json_encode($pushData));
+                            }
+                        }
+                    }
+
+                }
+
+                if( $data['token']=='simplechat' ){
+                    //查询所有连接用户，分发消息
+
+                    foreach (self::$table as $v){
+                        if($v['fd']!=$iframe->fd){
+                            $pushData = ['username'=>$data['username'],'avatar'=>$data['avatar'],'time'=>date('H:i'),'data'=>$data['data'],'action'=>'send'];
+                            $server->push($v['fd'],json_encode($pushData));
+                        }
+                    }
+                }
+            }
 
             //接受消息，对消息进行解析，发送给组内人其他人
 
-            $server->push($iframe->fd,"server push :".date('Y-m-d H:i:s'));
+//            $server->push($iframe->fd,$iframe->data);
         };
 
         //子任务 可以在server中向task_worker投递新的任务
@@ -194,6 +238,7 @@ class SwoolewsController extends Controller
         $server->closeDeal = function( $server,  $fd,  $reactorId ){
             //退出房间处理
 
+            self::$table->del($fd);
             echo  "Client close fd {$fd}".PHP_EOL;
         };
 
