@@ -18,9 +18,9 @@ $websocketUrl = '47.99.189.105:9501';
             box-sizing: border-box;
         }
         body, html {
-            height: 100%;
-            overflow: hidden;
-        }
+             height: 100%;
+             overflow: hidden;
+         }
         body, ul {
             margin: 0;
             padding: 0;
@@ -171,6 +171,8 @@ $websocketUrl = '47.99.189.105:9501';
         $('textarea').val('');
         $(".m-message ul").append(t);
     }
+
+    setInterval(function(){ws.send('active');},60000*5)
 </script>
 
 

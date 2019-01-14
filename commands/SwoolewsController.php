@@ -95,6 +95,8 @@ class SwoolewsController extends Controller
         $this->swooleConfig = array_merge([
             'document_root' => $web,
             'enable_static_handler' => true,
+            'heartbeat_check_interval' => 5*60,        //每m秒侦测一次心跳
+            'heartbeat_idle_time' => 10*60,            //一个TCP连接如果在n秒内未向服务器端发送数据，将会被切断
         ], $this->swooleConfig);
 
         $server = new WsServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
