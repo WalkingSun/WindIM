@@ -109,6 +109,8 @@ $websocketUrl = '47.99.189.105:9501';
             var msg = {"username":"<?php echo $user['username'];?>","avatar":"<?php echo $user['avatar'];?>","data":text,"token":"simplechat","time":time};
             showdata(msg);
             msg = JSON.stringify(msg);
+
+            //todo 优化，服务关闭 重连操作
             ws.send(msg);
         }
     });
