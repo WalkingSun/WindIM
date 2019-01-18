@@ -18,9 +18,9 @@ $websocketUrl = '47.99.189.105:9501';
             box-sizing: border-box;
         }
         body, html {
-             height: 100%;
-             overflow: hidden;
-         }
+            height: 100%;
+            overflow: hidden;
+        }
         body, ul {
             margin: 0;
             padding: 0;
@@ -50,9 +50,9 @@ $websocketUrl = '47.99.189.105:9501';
                 <img class="avatar" width="40" height="40" alt="Coffce" src="<?php echo $user['avatar'];?>">
                 <p class="name"><?php echo $user['username'];?></p>
             </header>
-<!--            <footer>-->
-<!--                <input class="search" placeholder="search user...">-->
-<!--            </footer>-->
+            <!--            <footer>-->
+            <!--                <input class="search" placeholder="search user...">-->
+            <!--            </footer>-->
         </div>
         <!--v-component-->
         <div class="m-list">
@@ -60,7 +60,7 @@ $websocketUrl = '47.99.189.105:9501';
                 <?php
                 if ($userList){
                     foreach ($userList as $v){
-                       echo ' <li class="active">
+                        echo ' <li class="active">
                     <img class="avatar" width="30" height="30" alt="" src="'.$v['avatar'].'">
                     <p class="name">'.$v['username'].'</p>
                 </li>';
@@ -98,11 +98,12 @@ $websocketUrl = '47.99.189.105:9501';
 <!--<script src="dist/main.js"></script>-->
 <?=\yii\helpers\Html::jsFile('@web/js/jquery.min.js')?>
 <script type="application/javascript">
+    var ws;
     $(window).keydown(function (event) {
 
         // 监听 Ctrl + Enter 可全屏查看  event.ctrlKey &&
         if ( event.keyCode == 13) {
-              var text = $('textarea').val();
+            var text = $('textarea').val();
             var myDate = new Date();
 
             var time = myDate.getHours()+':'+myDate.getMinutes();
@@ -110,13 +111,17 @@ $websocketUrl = '47.99.189.105:9501';
             showdata(msg);
             msg = JSON.stringify(msg);
 
-            //todo 优化，服务关闭 重连操作
-            ws.send(msg);
+            // 优化，服务关闭 重连操作
+            if(  "undefined" == typeof(ws) || null == ws ){
+                im();
+            }else{
+                ws.send(msg);
+            }
         }
     });
 
-
-    var ws = new WebSocket("ws://<?php echo $websocketUrl;?>");
+    function im(){
+        ws = new WebSocket("ws://<?php echo $websocketUrl;?>");
 
         ws.onopen = function()
         {
@@ -125,40 +130,42 @@ $websocketUrl = '47.99.189.105:9501';
             ws.send(msg);
         };
 
-    ws.onmessage = function(evt)
-    {
-        var d = JSON.parse(evt.data);
-        if( d.action=='connect' ){
-            var li = '<li class="active" id="user_'+d.fd+'">' +
-                '<img class="avatar" width="30" height="30" alt="" src="'+d.avatar+'">' +
-                '<p class="name">'+d.username+'</p>' +
-                '</li>';
-            $(".m-list ul").append(li);
-        }
-        if( d.action=='send' ) {
-            showdata(d);
-        }
+        ws.onmessage = function(evt)
+        {
+            var d = JSON.parse(evt.data);
+            if( d.action=='connect' ){
+                var li = '<li class="active" id="user_'+d.fd+'">' +
+                    '<img class="avatar" width="30" height="30" alt="" src="'+d.avatar+'">' +
+                    '<p class="name">'+d.username+'</p>' +
+                    '</li>';
+                $(".m-list ul").append(li);
+            }
+            if( d.action=='send' ) {
+                showdata(d);
+            }
 
-        if( d.action=='remove'){
-            $("#user_"+d.fd).remove();
-        }
+            if( d.action=='remove'){
+                if( d.username!='<?php echo $user['username'];?>' ){
+                    $("#user_"+d.fd).remove();
+                }
+            }
 
-        console.log(evt.data)
-    };
+            console.log(evt.data)
+        };
 
-    ws.onclose = function(evt)
-    {
-        console.log("WebSocketClosed!");
+        ws.onclose = function(evt)
+        {
+            console.log("WebSocketClosed!");
+        };
 
-    };
+        ws.onerror = function(evt)
+        {
 
-    ws.onerror = function(evt)
-    {
+            console.log("WebSocketError!");
 
-        console.log("WebSocketError!");
-
-    };
-
+        };
+    }
+    im();
 
     function showdata(data) {
 
@@ -174,7 +181,7 @@ $websocketUrl = '47.99.189.105:9501';
         $(".m-message ul").append(t);
     }
 
-    setInterval(function(){ws.send('active');},60000*5)
+    // setInterval(function(){ws.send('active');},60000*5)
 </script>
 
 
